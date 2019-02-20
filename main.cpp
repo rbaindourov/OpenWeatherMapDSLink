@@ -12,7 +12,7 @@
 #include <random>
 #include <sstream>
 
-using namespace std;
+using namespace cisco::efm_sdk;
 /// @brief The simple responder link example demonstrates the EFM SDK API for responder implementations. Shows node,
 /// action creation, and stream handling.
 class SimpleResponderLink
@@ -20,7 +20,7 @@ class SimpleResponderLink
 public:
   /// Constructs the responder link implementation.
   /// @param link The link to work with.
-  SimpleResponderLink(cisco::efm_sdk::Link& link)
+  SimpleResponderLink(Link& link)
     : link_(link)
     , responder_(link.responder())
   {
@@ -31,47 +31,47 @@ public:
   /// created.
   /// @param link_name The name of the link.
   /// @param ec The error code will be set to an error if the initialization failed.
-  void initialize(const string& link_name, const error_code& ec)
+  void initialize(const std::string& link_name, const std::error_code& ec)
   {
     if (!ec) {
       LOG_EFM_DEBUG(
-        "SimpleResponderLink", cisco::efm_sdk::DebugLevel::l1, "Responder link '" << link_name << "' initialized");
+        "SimpleResponderLink", DebugLevel::l1, "Responder link '" << link_name << "' initialized");
     } else {
       LOG_EFM_ERROR(ec, "could not initialize responder link");
     }
 
-    cisco::efm_sdk::NodeBuilder builder{"/"};
+    NodeBuilder builder{"/"};
 
     builder.make_node("sdk version")
       .display_name("SDK Version")
-      .type(cisco::efm_sdk::ValueType::String)
+      .type(ValueType::String)
       .value(link_.get_version_info());
     builder.make_node("text")
       .display_name("String")
-      .type(cisco::efm_sdk::ValueType::String)
+      .type(ValueType::String)
       .value("Hello, World!")
       .writable(
-        cisco::efm_sdk::Writable::Write, bind(&::SimpleResponderLink::set_text, this, placeholders::_1))
-      .on_subscribe(bind(&::SimpleResponderLink::on_subscribe_text, this, placeholders::_1));
+        Writable::Write, std::bind(&::SimpleResponderLink::set_text, this, std::placeholders::_1))
+      .on_subscribe(std::bind(&::SimpleResponderLink::on_subscribe_text, this, std::placeholders::_1));
 
     builder.make_node("set_text")
       .display_name("Set Text")
-      .action(cisco::efm_sdk::Action(
-                cisco::efm_sdk::PermissionLevel::Read,
-                bind(
+      .action(Action(
+                PermissionLevel::Read,
+                std::bind(
                   &SimpleResponderLink::set_text_called,
                   this,
-                  placeholders::_1,
-                  placeholders::_2,
-                  placeholders::_3,
-                  placeholders::_4))
-                .add_param(cisco::efm_sdk::ActionParameter{"String", cisco::efm_sdk::ValueType::String})
-                .add_column({"Success", cisco::efm_sdk::ValueType::Bool})
-                .add_column({"Message", cisco::efm_sdk::ValueType::String}));
+                  std::placeholders::_1,
+                  std::placeholders::_2,
+                  std::placeholders::_3,
+                  std::placeholders::_4))
+                .add_param(ActionParameter{"String", ValueType::String})
+                .add_column({"Success", ValueType::Bool})
+                .add_column({"Message", ValueType::String}));
 
     responder_.add_node(
-      move(builder),
-      bind(&SimpleResponderLink::nodes_created, this, placeholders::_1, placeholders::_2));
+      std::move(builder),
+      std::bind(&SimpleResponderLink::nodes_created, this, std::placeholders::_1, std::placeholders::_2));
   }
 
   /// Callback that will be called upon construction of the first level nodes.
@@ -79,12 +79,12 @@ public:
   /// not part of the paths vector means that the node was already created. Normally, there is no need to check for
   /// the presence of a path. If the error code signals no error, just continue with your work.
   /// @param ec The error code will be set to an error if the node creation failed.
-  void nodes_created(const vector<cisco::efm_sdk::NodePath>& paths, const error_code& ec)
+  void nodes_created(const std::vector<NodePath>& paths, const std::error_code& ec)
   {
     if (!ec) {
-      LOG_EFM_DEBUG("SimpleResponderLink", cisco::efm_sdk::DebugLevel::l1, "created nodes");
+      LOG_EFM_DEBUG("SimpleResponderLink", DebugLevel::l1, "created nodes");
       for (const auto& path : paths) {
-        LOG_EFM_DEBUG("SimpleResponderLink", cisco::efm_sdk::DebugLevel::l2, "created path - " << path);
+        LOG_EFM_DEBUG("SimpleResponderLink", DebugLevel::l2, "created path - " << path);
       }
     }
   }
@@ -92,20 +92,20 @@ public:
   /// Called every time the link connects to the broker.
   /// Will set the value on the '/text' path.
   /// @param ec The error code will be set to an error if the connect failed.
-  void connected(const error_code& ec)
+  void connected(const std::error_code& ec)
   {
     if (!ec) {
       disconnected_ = false;
       LOG_EFM_INFO(responder_error_code::connected);
 
-      responder_.set_value(text_path_, cisco::efm_sdk::Variant{"Hello, World!"}, [](const error_code&) {});
+      responder_.set_value(text_path_, Variant{"Hello, World!"}, [](const std::error_code&) {});
     }
   }
 
   /// Called every time the link is disconnected from the broker.
   /// Will set a flag to signal the disconnected status.
   /// @param ec The error code will be set to an error if the disconnect failed.
-  void disconnected(const error_code& ec)
+  void disconnected(const std::error_code& ec)
   {
     LOG_EFM_INFO(responder_error_code::disconnected, ec.message());
     disconnected_ = true;
@@ -113,7 +113,7 @@ public:
 
   /// Will be called the node '/text' is set via an \@set action.
   /// @param value The value that was set.
-  void set_text(const cisco::efm_sdk::Variant& value)
+  void set_text(const Variant& value)
   {
     LOG_EFM_INFO(responder_error_code::set_text, value);
   }
@@ -126,24 +126,24 @@ public:
   /// @param params The parameters set by the peer.
   /// @param ec The error code will be set to an error if the action failed.
   void set_text_called(
-    const cisco::efm_sdk::MutableActionResultStreamPtr& stream,
-    const cisco::efm_sdk::NodePath& parent_path,
-    const cisco::efm_sdk::Variant& params,
-    const error_code& ec)
+    const MutableActionResultStreamPtr& stream,
+    const NodePath& parent_path,
+    const Variant& params,
+    const std::error_code& ec)
   {
     (void)parent_path;
     if (!ec) {
-      LOG_EFM_DEBUG("SimpleResponderLink", cisco::efm_sdk::DebugLevel::l3, "set_text_called");
+      LOG_EFM_DEBUG("SimpleResponderLink", DebugLevel::l3, "set_text_called");
       const auto* input = params.get("String");
       if (input) {
         auto text = *input;
-        responder_.set_value(text_path_, text, [stream, text](const error_code& ec) {
+        responder_.set_value(text_path_, text, [stream, text](const std::error_code& ec) {
           if (!ec) {
-            stream->set_result(cisco::efm_sdk::UniqueActionResultPtr{new cisco::efm_sdk::ActionValuesResult{
-              cisco::efm_sdk::ActionValuesResult(cisco::efm_sdk::ActionSuccess).add_value(true).add_value(text)}});
+            stream->set_result(UniqueActionResultPtr{new ActionValuesResult{
+              ActionValuesResult(ActionSuccess).add_value(true).add_value(text)}});
           } else {
-            stream->set_result(cisco::efm_sdk::UniqueActionResultPtr{
-              new cisco::efm_sdk::ActionValuesResult{cisco::efm_sdk::ActionValuesResult(cisco::efm_sdk::ActionError)
+            stream->set_result(UniqueActionResultPtr{
+              new ActionValuesResult{ActionValuesResult(ActionError)
                                                        .add_value(false)
                                                        .add_value("Could not set value")}});
           }
@@ -151,8 +151,8 @@ public:
         return;
       }
     }
-    stream->set_result(cisco::efm_sdk::UniqueActionResultPtr{
-      new cisco::efm_sdk::ActionValuesResult{cisco::efm_sdk::ActionValuesResult(cisco::efm_sdk::ActionError)
+    stream->set_result(UniqueActionResultPtr{
+      new ActionValuesResult{ActionValuesResult(ActionError)
                                                .add_value(false)
                                                .add_value("Could not set value")}});
   }
@@ -169,9 +169,9 @@ public:
   }
 
 private:
-  cisco::efm_sdk::Link& link_;
-  cisco::efm_sdk::Responder& responder_;
-  cisco::efm_sdk::NodePath text_path_{"/text"};
+  Link& link_;
+  Responder& responder_;
+  NodePath text_path_{"/text"};
 
   bool disconnected_{true};
 };
@@ -179,20 +179,20 @@ private:
 
 int main(int argc, char* argv[])
 {
-  cisco::efm_sdk::FileConfigLoader loader;
-  cisco::efm_sdk::LinkOptions options("Simple-Responder-Link", loader);
-  if (!options.parse(argc, argv, cerr)) {
+  FileConfigLoader loader;
+  LinkOptions options("Simple-Responder-Link", loader);
+  if (!options.parse(argc, argv, std::cerr)) {
     return EXIT_FAILURE;
   }
 
-  cisco::efm_sdk::Link link(move(options), cisco::efm_sdk::LinkType::Responder);
+  Link link(std::move(options), LinkType::Responder);
   LOG_EFM_INFO(::responder_error_code::build_with_version, link.get_version_info());
 
   SimpleResponderLink responder_link(link);
 
-  link.set_on_initialized_handler( bind(&SimpleResponderLink::initialize, &responder_link, placeholders::_1, placeholders::_2 ) );
-  link.set_on_connected_handler( bind(&SimpleResponderLink::connected, &responder_link, placeholders::_1 ) );
-  link.set_on_disconnected_handler( bind(&SimpleResponderLink::disconnected, &responder_link, placeholders::_1 ) );
+  link.set_on_initialized_handler( std::bind(&SimpleResponderLink::initialize, &responder_link, std::placeholders::_1, std::placeholders::_2 ) );
+  link.set_on_connected_handler( std::bind(&SimpleResponderLink::connected, &responder_link, std::placeholders::_1 ) );
+  link.set_on_disconnected_handler( std::bind(&SimpleResponderLink::disconnected, &responder_link, std::placeholders::_1 ) );
 
   link.run();
 
