@@ -13,6 +13,7 @@
 #include <sstream>
 
 using namespace cisco::efm_sdk;
+using namespace std;
 /// @brief The simple responder link example demonstrates the EFM SDK API for responder implementations. Shows node,
 /// action creation, and stream handling.
 class SimpleResponderLink
@@ -51,27 +52,27 @@ public:
       .type(ValueType::String)
       .value("Hello, World!")
       .writable(
-        Writable::Write, std::bind(&::SimpleResponderLink::set_text, this, std::placeholders::_1))
-      .on_subscribe(std::bind(&::SimpleResponderLink::on_subscribe_text, this, std::placeholders::_1));
+        Writable::Write, bind(&::SimpleResponderLink::set_text, this, placeholders::_1))
+      .on_subscribe(bind(&::SimpleResponderLink::on_subscribe_text, this, placeholders::_1));
 
     builder.make_node("set_text")
       .display_name("Set Text")
       .action(Action(
                 PermissionLevel::Read,
-                std::bind(
+                bind(
                   &SimpleResponderLink::set_text_called,
                   this,
-                  std::placeholders::_1,
-                  std::placeholders::_2,
-                  std::placeholders::_3,
-                  std::placeholders::_4))
+                  placeholders::_1,
+                  placeholders::_2,
+                  placeholders::_3,
+                  placeholders::_4))
                 .add_param(ActionParameter{"String", ValueType::String})
                 .add_column({"Success", ValueType::Bool})
                 .add_column({"Message", ValueType::String}));
 
     responder_.add_node(
       std::move(builder),
-      std::bind(&SimpleResponderLink::nodes_created, this, std::placeholders::_1, std::placeholders::_2));
+      bind(&SimpleResponderLink::nodes_created, this, placeholders::_1, placeholders::_2));
   }
 
   /// Callback that will be called upon construction of the first level nodes.
@@ -190,9 +191,9 @@ int main(int argc, char* argv[])
 
   SimpleResponderLink responder_link(link);
 
-  link.set_on_initialized_handler( std::bind(&SimpleResponderLink::initialize, &responder_link, std::placeholders::_1, std::placeholders::_2 ) );
-  link.set_on_connected_handler( std::bind(&SimpleResponderLink::connected, &responder_link, std::placeholders::_1 ) );
-  link.set_on_disconnected_handler( std::bind(&SimpleResponderLink::disconnected, &responder_link, std::placeholders::_1 ) );
+  link.set_on_initialized_handler( bind(&SimpleResponderLink::initialize, &responder_link, placeholders::_1, placeholders::_2 ) );
+  link.set_on_connected_handler( bind(&SimpleResponderLink::connected, &responder_link, placeholders::_1 ) );
+  link.set_on_disconnected_handler( bind(&SimpleResponderLink::disconnected, &responder_link, placeholders::_1 ) );
 
   link.run();
 
