@@ -71,7 +71,7 @@ public:
                 .add_column({"Message", ValueType::String}));
 
     responder_.add_node(
-      std::move(builder),
+      move(builder),
       bind(&SimpleResponderLink::nodes_created, this, placeholders::_1, placeholders::_2));
   }
 
@@ -80,7 +80,7 @@ public:
   /// not part of the paths vector means that the node was already created. Normally, there is no need to check for
   /// the presence of a path. If the error code signals no error, just continue with your work.
   /// @param ec The error code will be set to an error if the node creation failed.
-  void nodes_created(const std::vector<NodePath>& paths, const std::error_code& ec)
+  void nodes_created(const vector<NodePath>& paths, const std::error_code& ec)
   {
     if (!ec) {
       LOG_EFM_DEBUG("SimpleResponderLink", DebugLevel::l1, "created nodes");
@@ -186,7 +186,7 @@ int main(int argc, char* argv[])
     return EXIT_FAILURE;
   }
 
-  Link link(std::move(options), LinkType::Responder);
+  Link link(move(options), LinkType::Responder);
   LOG_EFM_INFO(::responder_error_code::build_with_version, link.get_version_info());
 
   SimpleResponderLink responder_link(link);
