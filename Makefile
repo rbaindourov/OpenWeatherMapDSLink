@@ -1,6 +1,6 @@
-CFLAGS = -std=c++11 -Wall -Wextra -I ./include -g -O2 -D_FORTIFY_SOURCE=2 -fPIE -fstack-protector
+CFLAGS = -std=c++11 -Wall -Wextra -I/usr/include/curl -I ./include -g -O2 -D_FORTIFY_SOURCE=2 -fPIE -fstack-protector
 LDFLAGS = -L ./lib -pie -Wl,-z,now
-LIBS = -lboost_log -lboost_date_time -lboost_program_options -lboost_system -lboost_thread -lboost_filesystem -lboost_regex -lssl -lcrypto -ldl -pthread
+LIBS = -lboost_log -lboost_date_time -lboost_program_options -lboost_system -lboost_thread -lboost_filesystem -lboost_regex -lssl -lcrypto -ldl -pthread -lcurl
 
 .PHONY: all clean
 all: simple-responder simple-responder-shared
