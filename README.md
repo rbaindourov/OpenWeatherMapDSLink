@@ -17,7 +17,7 @@ Copied over from EFM SDK:
 
 ## Testing Requirements
 
-I am testing using (Cisco Kinetic Edge and Fog Processing Module 1.5.0)[https://www.cisco.com/c/en/us/support/cloud-systems-management/edge-fog-fabric/products-installation-guides-list.html]
+I am testing using [Cisco Kinetic Edge and Fog Processing Module 1.5.0](https://www.cisco.com/c/en/us/support/cloud-systems-management/edge-fog-fabric/products-installation-guides-list.html)
 
 
 ## GNU public license
