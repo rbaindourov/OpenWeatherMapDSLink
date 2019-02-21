@@ -25,7 +25,7 @@ static int writer(char *data, size_t size, size_t nmemb, std::string *writerData
   return size * nmemb;
 }
 
-static bool initCURL(CURL *&conn, char *url){
+static bool initCURL(CURL *&conn, const string& url){
   CURLcode code;
   conn = curl_easy_init();
 
@@ -124,21 +124,26 @@ public:
 
   void getWeatherData()
   {
+    if (!disconnected_) { //defensive programming, do nothing if not connected to EFM
 
-    CURL *conn = NULL;
-    CURLcode code;
-    
-    if(!initCURL(conn, "http://api.openweathermap.org/data/2.5/weather?q=London,uk&APPID=8fdc9a1f1fb74ac9dfed4803a57b02c6")) {
-      LOG_EFM_ERROR(responder_error_code::curl_error, " curl initializion failed ");
-      exit(EXIT_FAILURE);
-    }
+      CURL *conn = NULL;
+      CURLcode code;
+      
+      if(!initCURL(conn, "http://api.openweathermap.org/data/2.5/weather?q=London,uk&APPID=8fdc9a1f1fb74ac9dfed4803a57b02c6")) {
+        LOG_EFM_ERROR(responder_error_code::curl_error, " curl initializion failed ");
+        exit(EXIT_FAILURE);
+      }
 
-    code = curl_easy_perform(conn);
-    curl_easy_cleanup(conn);
+      code = curl_easy_perform(conn);
+      curl_easy_cleanup(conn);
 
-    responder_.set_value(OWDPath, Variant{buffer}, std::chrono::system_clock::now(), [](const std::error_code&) {});
+      if(code != CURLE_OK) {
+        LOG_EFM_ERROR(responder_error_code::curl_error, "Failed to GET");
+        exit(EXIT_FAILURE);
+      }
 
-    if (!disconnected_) {
+      responder_.set_value(OWDPath, Variant{buffer}, std::chrono::system_clock::now(), [](const std::error_code&) {});
+
       link_.schedule_timed_task(std::chrono::seconds(60), [&]() { this->getWeatherData(); });
     }
   }
@@ -226,6 +231,7 @@ int main(int argc, char* argv[])
   
   if (!options.parse(argc, argv, std::cerr)) return EXIT_FAILURE;
   
+  curl_global_init(CURL_GLOBAL_DEFAULT);
   Link link(move(options), LinkType::Responder);
   LOG_EFM_INFO(::responder_error_code::build_with_version, link.get_version_info());
 
