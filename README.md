@@ -21,7 +21,7 @@ I am testing using [Cisco Kinetic Edge and Fog Processing Module 1.5.0](https://
 
 To build just invoke `make` in the cloned directory.
 
-To start an example you have to supply the broker url by using the `-b` command line parameter:
+To start the application you have to supply the broker url by using the `-b` command line parameter:
 
     prompt> ./open_weather_data_link -b http://localhost:8080/conn
 
