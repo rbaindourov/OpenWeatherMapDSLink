@@ -17,7 +17,56 @@ using namespace std;
 
 
 static char errorBuffer[CURL_ERROR_SIZE];
-static std::string buffer;
+static string buffer;
+
+static int writer(char *data, size_t size, size_t nmemb, std::string *writerData){
+  if(writerData == NULL) return 0;
+  writerData->append(data, size*nmemb);
+  return size * nmemb;
+}
+
+static bool initCURL(CURL *&conn, char *url){
+  CURLcode code;
+  conn = curl_easy_init();
+
+  if(conn == NULL) {
+    LOG_EFM_ERROR(responder_error_code::curl_error, "Failed to create CURL connection");
+    exit(EXIT_FAILURE);
+  }
+
+  code = curl_easy_setopt(conn, CURLOPT_ERRORBUFFER, errorBuffer);
+  if(code != CURLE_OK) {
+    LOG_EFM_ERROR(responder_error_code::curl_error, "Failed to set error buffer");
+    return false;
+  }
+
+  code = curl_easy_setopt(conn, CURLOPT_URL, url);
+  if(code != CURLE_OK) {
+    LOG_EFM_ERROR(responder_error_code::curl_error, "Failed to set URL" );
+    return false;
+  }
+
+  code = curl_easy_setopt(conn, CURLOPT_FOLLOWLOCATION, 1L);
+  if(code != CURLE_OK) {
+    LOG_EFM_ERROR(responder_error_code::curl_error, "Failed to set redirect option ");
+    return false;
+  }
+
+  code = curl_easy_setopt(conn, CURLOPT_WRITEFUNCTION, writer);
+  if(code != CURLE_OK) {
+    LOG_EFM_ERROR(responder_error_code::curl_error, "Failed to set writer ");
+    return false;
+  }
+
+  code = curl_easy_setopt(conn, CURLOPT_WRITEDATA, &buffer);
+  if(code != CURLE_OK) {
+    LOG_EFM_ERROR(responder_error_code::curl_error, "Failed to set write data ");
+    return false;
+  }
+
+  return true;
+}
+
 
 class OpenWeatherDataLink
 {
@@ -75,8 +124,19 @@ public:
 
   void getWeatherData()
   {
+
+    CURL *conn = NULL;
+    CURLcode code;
     
-    //responder_.set_value(OWDPath, Variant{val}, std::chrono::system_clock::now(), [](const std::error_code&) {});
+    if(!initCURL(conn, "http://api.openweathermap.org/data/2.5/weather?q=London,uk&APPID=8fdc9a1f1fb74ac9dfed4803a57b02c6")) {
+      LOG_EFM_ERROR(responder_error_code::curl_error, " curl initializion failed ");
+      exit(EXIT_FAILURE);
+    }
+
+    code = curl_easy_perform(conn);
+    curl_easy_cleanup(conn);
+
+    responder_.set_value(OWDPath, Variant{buffer}, std::chrono::system_clock::now(), [](const std::error_code&) {});
 
     if (!disconnected_) {
       link_.schedule_timed_task(std::chrono::seconds(60), [&]() { this->getWeatherData(); });
@@ -89,7 +149,7 @@ public:
       disconnected_ = false;
       LOG_EFM_INFO(responder_error_code::connected);
       link_.schedule_timed_task(std::chrono::seconds(60), [&]() { this->getWeatherData(); });
-      responder_.set_value(text_path_, Variant{"Hello, World!"}, [](const std::error_code&) {});
+      responder_.set_value(text_path_, Variant{"OpenWeatherMap DSLink Loaded"}, [](const std::error_code&) {});
     }
   }
 
@@ -158,71 +218,13 @@ private:
   bool disconnected_{true};
 };
 
-static int writer(char *data, size_t size, size_t nmemb, std::string *writerData){
-  if(writerData == NULL) return 0;
-  writerData->append(data, size*nmemb);
-  return size * nmemb;
-}
-
-static bool initCURL(CURL *&conn, char *url){
-  CURLcode code;
-  conn = curl_easy_init();
-
-  if(conn == NULL) {
-    LOG_EFM_ERROR(responder_error_code::curl_error, "Failed to create CURL connection");
-    exit(EXIT_FAILURE);
-  }
-
-  code = curl_easy_setopt(conn, CURLOPT_ERRORBUFFER, errorBuffer);
-  if(code != CURLE_OK) {
-    LOG_EFM_ERROR(responder_error_code::curl_error, "Failed to set error buffer");
-    return false;
-  }
-
-  code = curl_easy_setopt(conn, CURLOPT_URL, url);
-  if(code != CURLE_OK) {
-    LOG_EFM_ERROR(responder_error_code::curl_error, "Failed to set URL" );
-    return false;
-  }
-
-  code = curl_easy_setopt(conn, CURLOPT_FOLLOWLOCATION, 1L);
-  if(code != CURLE_OK) {
-    LOG_EFM_ERROR(responder_error_code::curl_error, "Failed to set redirect option ");
-    return false;
-  }
-
-  code = curl_easy_setopt(conn, CURLOPT_WRITEFUNCTION, writer);
-  if(code != CURLE_OK) {
-    LOG_EFM_ERROR(responder_error_code::curl_error, "Failed to set writer ");
-    return false;
-  }
-
-  code = curl_easy_setopt(conn, CURLOPT_WRITEDATA, &buffer);
-  if(code != CURLE_OK) {
-    LOG_EFM_ERROR(responder_error_code::curl_error, "Failed to set write data ");
-    return false;
-  }
-
-  return true;
-}
-
 
 int main(int argc, char* argv[])
 {
   FileConfigLoader loader;
   LinkOptions options("OpenWeatherData-Link", loader);
   
-  CURL *conn = NULL;
-  CURLcode code;
-  
-  if (!options.parse(argc, argv, std::cerr)) 
-    return EXIT_FAILURE;
-
-  
-  if(!initCURL(conn, "")) {
-    LOG_EFM_ERROR(responder_error_code::curl_error, " curl initializion failed ");
-    exit(EXIT_FAILURE);
-  }
+  if (!options.parse(argc, argv, std::cerr)) return EXIT_FAILURE;
   
   Link link(move(options), LinkType::Responder);
   LOG_EFM_INFO(::responder_error_code::build_with_version, link.get_version_info());
