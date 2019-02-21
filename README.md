@@ -19,6 +19,11 @@ Copied over from EFM SDK:
 
 I am testing using [Cisco Kinetic Edge and Fog Processing Module 1.5.0](https://www.cisco.com/c/en/us/support/cloud-systems-management/edge-fog-fabric/products-installation-guides-list.html)
 
+To build just invoke `make` in the cloned directory.
+
+To start an example you have to supply the broker url by using the `-b` command line parameter:
+
+    prompt> ./open_weather_data_link -b http://localhost:8080/conn
 
 ## GNU public license
 My modifications are free software.
