@@ -3,7 +3,7 @@ LDFLAGS = -L ./lib -pie -Wl,-z,now
 LIBS = -lboost_log -lboost_date_time -lboost_program_options -lboost_system -lboost_thread -lboost_filesystem -lboost_regex -lssl -lcrypto -ldl -pthread -lcurl
 
 .PHONY: all clean
-all: simple-responder simple-responder-shared
+all: open_weather_data_link
 
 DEPS = error_code.h
 OBJ = error_code.o main.o
@@ -11,18 +11,13 @@ OBJ = error_code.o main.o
 %.o: %.cpp $(DEPS)
 	$(CXX) -c -o $@ $< $(CFLAGS)
 
-simple-responder: $(OBJ)
+open_weather_data_link: $(OBJ)
 	$(CXX) -o $@ $^ $(LDFLAGS) -ldslink-sdk-cpp-static $(LIBS)
 
-simple-responder-shared: $(OBJ)
-	$(CXX) -o $@ $^ $(LDFLAGS) -ldslink-sdk-cpp $(LIBS)
 
-run: simple-responder
-	./simple-responder
-
-run-shared: simple-responder-shared create-libcrypto-symlink
-	LD_LIBRARY_PATH=../../lib ./responder-shared
+run: open_weather_data_link
+	./open_weather_data_link
 
 clean:
-	$(RM) simple-responder simple-responder-shared $(OBJ)
+	$(RM) open_weather_data_link $(OBJ)
 

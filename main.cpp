@@ -19,16 +19,16 @@ using namespace std;
 static char errorBuffer[CURL_ERROR_SIZE];
 static std::string buffer;
 
-class SimpleResponderLink
+class OpenWeatherDataLink
 {
 public:
  
-  SimpleResponderLink(Link& link) : link_(link) , responder_(link.responder()) { }
+  OpenWeatherDataLink(Link& link) : link_(link) , responder_(link.responder()) { }
 
   void initialize(const std::string& link_name, const std::error_code& ec)
   {
     if (!ec) 
-      LOG_EFM_DEBUG( "SimpleResponderLink", DebugLevel::l1, "Responder link '" << link_name << "' initialized");
+      LOG_EFM_DEBUG( "OpenWeatherDataLink", DebugLevel::l1, "Responder link '" << link_name << "' initialized");
     else 
       LOG_EFM_ERROR(ec, "could not initialize responder link");
     
@@ -44,8 +44,8 @@ public:
       .display_name("String")
       .type(ValueType::String)
       .value("Hello, World!")
-      .writable( Writable::Write, bind( &::SimpleResponderLink::set_text, this, placeholders::_1 ) )
-      .on_subscribe( bind( &::SimpleResponderLink::on_subscribe_text, this, placeholders::_1 ) );
+      .writable( Writable::Write, bind( &::OpenWeatherDataLink::set_text, this, placeholders::_1 ) )
+      .on_subscribe( bind( &::OpenWeatherDataLink::on_subscribe_text, this, placeholders::_1 ) );
 
     builder.make_node("set_text")
       .display_name("Set Text")
@@ -158,21 +158,14 @@ private:
   bool disconnected_{true};
 };
 
-static int writer(char *data, size_t size, size_t nmemb,
-                  std::string *writerData)
-{
-  if(writerData == NULL)
-    return 0;
-
+static int writer(char *data, size_t size, size_t nmemb, std::string *writerData){
+  if(writerData == NULL) return 0;
   writerData->append(data, size*nmemb);
-
   return size * nmemb;
 }
 
-static bool initCURL(CURL *&conn, char *url)
-{
+static bool initCURL(CURL *&conn, char *url){
   CURLcode code;
-
   conn = curl_easy_init();
 
   if(conn == NULL) {
@@ -217,7 +210,7 @@ static bool initCURL(CURL *&conn, char *url)
 int main(int argc, char* argv[])
 {
   FileConfigLoader loader;
-  LinkOptions options("Simple-Responder-Link", loader);
+  LinkOptions options("OpenWeatherData-Link", loader);
   
   CURL *conn = NULL;
   CURLcode code;
@@ -227,18 +220,18 @@ int main(int argc, char* argv[])
 
   
   if(!initCURL(conn, "")) {
-    LOG_EFM_ERROR(responder_error_code::curl_error, " curl initializion failed\n");
+    LOG_EFM_ERROR(responder_error_code::curl_error, " curl initializion failed ");
     exit(EXIT_FAILURE);
   }
   
   Link link(move(options), LinkType::Responder);
   LOG_EFM_INFO(::responder_error_code::build_with_version, link.get_version_info());
 
-  SimpleResponderLink responder_link(link);
+  OpenWeatherDataLink responder_link(link);
 
-  link.set_on_initialized_handler( bind(&SimpleResponderLink::initialize, &responder_link, placeholders::_1, placeholders::_2 ) );
-  link.set_on_connected_handler( bind(&SimpleResponderLink::connected, &responder_link, placeholders::_1 ) );
-  link.set_on_disconnected_handler( bind(&SimpleResponderLink::disconnected, &responder_link, placeholders::_1 ) );
+  link.set_on_initialized_handler( bind(&OpenWeatherDataLink::initialize, &responder_link, placeholders::_1, placeholders::_2 ) );
+  link.set_on_connected_handler( bind(&OpenWeatherDataLink::connected, &responder_link, placeholders::_1 ) );
+  link.set_on_disconnected_handler( bind(&OpenWeatherDataLink::disconnected, &responder_link, placeholders::_1 ) );
 
   link.run();
 
