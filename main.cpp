@@ -176,19 +176,19 @@ static bool initCURL(CURL *&conn, char *url)
   conn = curl_easy_init();
 
   if(conn == NULL) {
-    fprintf(stderr, "Failed to create CURL connection\n");
+    LOG_EFM_ERROR(responder_error_code::curl_error, "Failed to create CURL connection");
     exit(EXIT_FAILURE);
   }
 
   code = curl_easy_setopt(conn, CURLOPT_ERRORBUFFER, errorBuffer);
   if(code != CURLE_OK) {
-    fprintf(stderr, "Failed to set error buffer [%d]\n", code);
+    LOG_EFM_ERROR(responder_error_code::curl_error, "Failed to set error buffer");
     return false;
   }
 
   code = curl_easy_setopt(conn, CURLOPT_URL, url);
   if(code != CURLE_OK) {
-    fprintf(stderr, "Failed to set URL [%s]\n", errorBuffer);
+    LOG_EFM_ERROR(responder_error_code::curl_error, "Failed to set URL" );
     return false;
   }
 
