@@ -73,13 +73,22 @@ public:
     }
   }
 
+  void getWeatherData()
+  {
+    
+    //responder_.set_value(OWDPath, Variant{val}, std::chrono::system_clock::now(), [](const std::error_code&) {});
+
+    if (!disconnected_) {
+      link_.schedule_timed_task(std::chrono::seconds(1), [&]() { this->getWeatherData(); });
+    }
+  }
 
   void connected(const std::error_code& ec)
   {
     if (!ec) {
       disconnected_ = false;
       LOG_EFM_INFO(responder_error_code::connected);
-
+      link_.schedule_timed_task(std::chrono::seconds(1), [&]() { this->getWeatherData(); });
       responder_.set_value(text_path_, Variant{"Hello, World!"}, [](const std::error_code&) {});
     }
   }
@@ -145,7 +154,7 @@ private:
   Link& link_;
   Responder& responder_;
   NodePath text_path_{"/text"};
-
+  NodePath OWDPath{"/OpenWeatherData"};
   bool disconnected_{true};
 };
 
@@ -217,7 +226,7 @@ int main(int argc, char* argv[])
     return EXIT_FAILURE;
 
   
-  if(!initCURL(conn, argv[1])) {
+  if(!initCURL(conn, "")) {
     fprintf(stderr, "Connection initializion failed\n");
     exit(EXIT_FAILURE);
   }
