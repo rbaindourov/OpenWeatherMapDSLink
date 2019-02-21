@@ -50,7 +50,7 @@ public:
     builder.make_node("set_text")
       .display_name("Set Text")
       .action(Action( PermissionLevel::Read,
-                bind( &SimpleResponderLink::set_text_called, this,
+                bind( &OpenWeatherDataLink::set_text_called, this,
                  placeholders::_1, placeholders::_2, placeholders::_3, placeholders::_4
                 ))
                 .add_param(ActionParameter{"String", ValueType::String})
@@ -58,7 +58,7 @@ public:
                 .add_column({"Message", ValueType::String}));
 
     responder_.add_node( move(builder),
-      bind(&SimpleResponderLink::nodes_created, this, placeholders::_1, placeholders::_2)
+      bind(&OpenWeatherDataLink::nodes_created, this, placeholders::_1, placeholders::_2)
     );
   }
 
@@ -66,9 +66,9 @@ public:
   void nodes_created(const vector<NodePath>& paths, const std::error_code& ec)
   {
     if (!ec) {
-      LOG_EFM_DEBUG("SimpleResponderLink", DebugLevel::l1, "created nodes");
+      LOG_EFM_DEBUG("OpenWeatherDataLink", DebugLevel::l1, "created nodes");
       for (const auto& path : paths) {
-        LOG_EFM_DEBUG("SimpleResponderLink", DebugLevel::l2, "created path - " << path);
+        LOG_EFM_DEBUG("OpenWeatherDataLink", DebugLevel::l2, "created path - " << path);
       }
     }
   }
@@ -79,7 +79,7 @@ public:
     //responder_.set_value(OWDPath, Variant{val}, std::chrono::system_clock::now(), [](const std::error_code&) {});
 
     if (!disconnected_) {
-      link_.schedule_timed_task(std::chrono::seconds(1), [&]() { this->getWeatherData(); });
+      link_.schedule_timed_task(std::chrono::seconds(60), [&]() { this->getWeatherData(); });
     }
   }
 
@@ -88,7 +88,7 @@ public:
     if (!ec) {
       disconnected_ = false;
       LOG_EFM_INFO(responder_error_code::connected);
-      link_.schedule_timed_task(std::chrono::seconds(1), [&]() { this->getWeatherData(); });
+      link_.schedule_timed_task(std::chrono::seconds(60), [&]() { this->getWeatherData(); });
       responder_.set_value(text_path_, Variant{"Hello, World!"}, [](const std::error_code&) {});
     }
   }
@@ -114,7 +114,7 @@ public:
   {
     (void)parent_path;
     if (!ec) {
-      LOG_EFM_DEBUG("SimpleResponderLink", DebugLevel::l3, "set_text_called");
+      LOG_EFM_DEBUG("OpenWeatherDataLink", DebugLevel::l3, "set_text_called");
       const auto* input = params.get("String");
       if (input) {
         auto text = *input;
