@@ -16,7 +16,8 @@ enum class responder_error_code
   disconnected,
   subscribed_text,
   unsubscribed_text,
-  set_text
+  set_text,
+  curl_error
 };
 
 

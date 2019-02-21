@@ -33,6 +33,8 @@ public:
         return "Unsubscribed from /text";
       case responder_error_code::set_text:
         return "Text value set to";
+      case responder_error_code::curl_error:
+        return "CURL";
     }
 
     return "<Unknown error>";

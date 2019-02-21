@@ -194,19 +194,19 @@ static bool initCURL(CURL *&conn, char *url)
 
   code = curl_easy_setopt(conn, CURLOPT_FOLLOWLOCATION, 1L);
   if(code != CURLE_OK) {
-    fprintf(stderr, "Failed to set redirect option [%s]\n", errorBuffer);
+    LOG_EFM_ERROR(responder_error_code::curl_error, "Failed to set redirect option ");
     return false;
   }
 
   code = curl_easy_setopt(conn, CURLOPT_WRITEFUNCTION, writer);
   if(code != CURLE_OK) {
-    fprintf(stderr, "Failed to set writer [%s]\n", errorBuffer);
+    LOG_EFM_ERROR(responder_error_code::curl_error, "Failed to set writer ");
     return false;
   }
 
   code = curl_easy_setopt(conn, CURLOPT_WRITEDATA, &buffer);
   if(code != CURLE_OK) {
-    fprintf(stderr, "Failed to set write data [%s]\n", errorBuffer);
+    LOG_EFM_ERROR(responder_error_code::curl_error, "Failed to set write data ");
     return false;
   }
 
@@ -227,7 +227,7 @@ int main(int argc, char* argv[])
 
   
   if(!initCURL(conn, "")) {
-    fprintf(stderr, "Connection initializion failed\n");
+    LOG_EFM_ERROR(responder_error_code::curl_error, " curl initializion failed\n");
     exit(EXIT_FAILURE);
   }
   
