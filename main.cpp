@@ -25,9 +25,11 @@ static int writer(char *data, size_t size, size_t nmemb, std::string *writerData
   return size * nmemb;
 }
 
-static bool initCURL(CURL *&conn, const string& url){
+static bool initCURL(CURL *&conn, const char* url){
   CURLcode code;
   conn = curl_easy_init();
+  cout<< "url: " << url;
+
 
   if(conn == NULL) {
     LOG_EFM_ERROR(responder_error_code::curl_error, "Failed to create CURL connection");
@@ -124,8 +126,11 @@ public:
 
   void getWeatherData()
   {
-    if (!disconnected_) { //defensive programming, do nothing if not connected to EFM
+    cout << "getWeatherData" << !disconnected_;
 
+
+    if (!disconnected_) { //defensive programming, do nothing if not connected to EFM
+      
       CURL *conn = NULL;
       CURLcode code;
       
@@ -138,7 +143,7 @@ public:
       curl_easy_cleanup(conn);
 
       if(code != CURLE_OK) {
-        LOG_EFM_ERROR(responder_error_code::curl_error, "Failed to GET");
+        LOG_EFM_ERROR(responder_error_code::curl_error, "Failed to GET" << errorBuffer);
         exit(EXIT_FAILURE);
       }
 
@@ -153,7 +158,7 @@ public:
     if (!ec) {
       disconnected_ = false;
       LOG_EFM_INFO(responder_error_code::connected);
-      link_.schedule_timed_task(std::chrono::seconds(60), [&]() { this->getWeatherData(); });
+      link_.schedule_timed_task(std::chrono::seconds(1), [&]() { this->getWeatherData(); });
       responder_.set_value(text_path_, Variant{"OpenWeatherMap DSLink Loaded"}, [](const std::error_code&) {});
     }
   }
