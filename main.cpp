@@ -184,7 +184,7 @@ public:
       const auto* input = params.get("String");
       if (input) {
         auto text = *input;
-        responder_.set_value(text_path_, text, [stream, text](const std::error_code& ec) {
+        responder_.set_value(OWDPath, text, [stream, text](const std::error_code& ec) {
           if (!ec) {
             stream->set_result(UniqueActionResultPtr{new ActionValuesResult{
               ActionValuesResult(ActionSuccess).add_value(true).add_value(text)}});
