@@ -91,19 +91,13 @@ public:
       .type(ValueType::String)
       .value(link_.get_version_info());
 
-    builder.make_node("text")
-      .display_name("String")
-      .type(ValueType::String)
-      .value("Hello, World!")
-      .writable( Writable::Write, bind( &::OpenWeatherDataLink::set_text, this, placeholders::_1 ) )
-      .on_subscribe( bind( &::OpenWeatherDataLink::on_subscribe_text, this, placeholders::_1 ) );
+  
 
-
-builder.make_node("OpenWeatherData")
-      .display_name("String")
+    builder.make_node("OpenWeatherData")
+      .display_name("OpenWeatherData")
       .type(ValueType::String)
       .writable( Writable::Write, bind( &::OpenWeatherDataLink::set_text, this, placeholders::_1 ) )
-      .on_subscribe( bind( &::OpenWeatherDataLink::on_subscribe_text, this, placeholders::_1 ) );
+      .on_subscribe( bind( &::OpenWeatherDataLink::on_subscribe_json, this, placeholders::_1 ) );
 
     builder.make_node("set_text")
       .display_name("Set Text")
@@ -131,11 +125,7 @@ builder.make_node("OpenWeatherData")
     }
   }
 
-  void getWeatherData()
-  {
-    //cout << "getWeatherData" << !disconnected_;
-
-
+  void getWeatherData() {
     if (!disconnected_) { //defensive programming, do nothing if not connected to EFM
       
       CURL *conn = NULL;
@@ -156,7 +146,7 @@ builder.make_node("OpenWeatherData")
 
       responder_.set_value(OWDPath, Variant{buffer}, std::chrono::system_clock::now(), [](const std::error_code&) {});
 
-      link_.schedule_timed_task(std::chrono::seconds(1), [&]() { this->getWeatherData(); });
+      link_.schedule_timed_task(std::chrono::seconds(60), [&]() { this->getWeatherData(); });
     }
   }
 
@@ -165,8 +155,7 @@ builder.make_node("OpenWeatherData")
     if (!ec) {
       disconnected_ = false;
       LOG_EFM_INFO(responder_error_code::connected);
-      link_.schedule_timed_task(std::chrono::seconds(1), [&]() { this->getWeatherData(); });
-      responder_.set_value(text_path_, Variant{"OpenWeatherMap DSLink Loaded"}, [](const std::error_code&) {});
+      link_.schedule_timed_task(std::chrono::seconds(1), [&]() { this->getWeatherData(); });  
     }
   }
 
@@ -218,13 +207,11 @@ builder.make_node("OpenWeatherData")
   }
 
  
-  void on_subscribe_text(bool subscribe)
-  {
+  void on_subscribe_json(bool subscribe){
     if (subscribe) 
       LOG_EFM_INFO(responder_error_code::subscribed_text);
     else 
       LOG_EFM_INFO(responder_error_code::unsubscribed_text);
-    
   }
 
 private:
