@@ -1,12 +1,9 @@
-// @copyright_start
-// Copyright (c) 2019 Cisco and/or its affiliates. All rights reserved.
-// @copyright_end
-
 #include <efm_link.h>
 #include <efm_link_options.h>
 #include <efm_logging.h>
 #include <curl/curl.h>
 #include "error_code.h"
+#include "rapidjson/document.h"
 
 #include <iostream>
 #include <random>
