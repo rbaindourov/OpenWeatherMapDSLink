@@ -15,6 +15,9 @@ Copied over from EFM SDK:
 * include/ - API header files
 * lib/ - API static libraries
 
+Copied over from RapidJSON:
+* rapidjson/ - Header Only JSON parser
+
 ## Testing Requirements
 
 I am testing using [Cisco Kinetic Edge and Fog Processing Module 1.5.0](https://www.cisco.com/c/en/us/support/cloud-systems-management/edge-fog-fabric/products-installation-guides-list.html)
