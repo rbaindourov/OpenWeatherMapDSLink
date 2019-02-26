@@ -28,7 +28,7 @@ static int writer(char *data, size_t size, size_t nmemb, std::string *writerData
 static bool initCURL(CURL *&conn, const string& url){
   CURLcode code;
   conn = curl_easy_init();
-  cout<< "url: " << url;
+  
 
 
   if(conn == NULL) {
@@ -98,6 +98,13 @@ public:
       .writable( Writable::Write, bind( &::OpenWeatherDataLink::set_text, this, placeholders::_1 ) )
       .on_subscribe( bind( &::OpenWeatherDataLink::on_subscribe_text, this, placeholders::_1 ) );
 
+
+builder.make_node("OpenWeatherData")
+      .display_name("String")
+      .type(ValueType::String)
+      .writable( Writable::Write, bind( &::OpenWeatherDataLink::set_text, this, placeholders::_1 ) )
+      .on_subscribe( bind( &::OpenWeatherDataLink::on_subscribe_text, this, placeholders::_1 ) );
+
     builder.make_node("set_text")
       .display_name("Set Text")
       .action(Action( PermissionLevel::Read,
@@ -126,7 +133,7 @@ public:
 
   void getWeatherData()
   {
-    cout << "getWeatherData" << !disconnected_;
+    //cout << "getWeatherData" << !disconnected_;
 
 
     if (!disconnected_) { //defensive programming, do nothing if not connected to EFM
@@ -159,7 +166,7 @@ public:
       disconnected_ = false;
       LOG_EFM_INFO(responder_error_code::connected);
       link_.schedule_timed_task(std::chrono::seconds(1), [&]() { this->getWeatherData(); });
-      //responder_.set_value(text_path_, Variant{"OpenWeatherMap DSLink Loaded"}, [](const std::error_code&) {});
+      responder_.set_value(text_path_, Variant{"OpenWeatherMap DSLink Loaded"}, [](const std::error_code&) {});
     }
   }
 
