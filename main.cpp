@@ -9,6 +9,7 @@
 #include <random>
 #include <sstream>
 
+using namespace rapidjson;
 using namespace cisco::efm_sdk;
 using namespace std;
 
@@ -142,6 +143,22 @@ public:
       }
 
       responder_.set_value(OWDPath, Variant{buffer}, std::chrono::system_clock::now(), [](const std::error_code&) {});
+      Document d;
+      d.Parse(buffer);
+      for (auto& m : d["main"].GetObject()){
+          printf("\n--------\nName of member %s ", m.name.GetString());
+          
+          if(m.value.IsString() ) 
+              printf("\nValue of member %s ", m.value.GetString() );
+          if(m.value.IsInt() ) 
+              printf("\nValue of member %i ", m.value.GetInt() );
+
+          if(m.value.IsDouble() ) 
+              printf("\nValue of member %f ", m.value.GetDouble() );
+          
+          printf("\n");
+
+      }
 
       link_.schedule_timed_task(std::chrono::seconds(60), [&]() { this->getWeatherData(); });
     }
@@ -204,7 +221,7 @@ public:
   }
 
  
-  void on_subscribe_json(bool subscribe){
+  void on_subscribe_json(bool subscribe) {
     if (subscribe) 
       LOG_EFM_INFO(responder_error_code::subscribed_text);
     else 
