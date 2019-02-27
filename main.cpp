@@ -147,6 +147,7 @@ public:
 
       responder_.set_value(OWDPath, Variant{buffer}, std::chrono::system_clock::now(), [](const std::error_code&) {});
       Document d;
+      cout<< buffer << "\n\n";
       d.Parse(buffer.c_str());
       
       if( d["main"].IsObject() ){
@@ -186,8 +187,6 @@ public:
 
       }
      
-
-
 
       link_.schedule_timed_task(std::chrono::seconds(60), [&]() { this->getWeatherData(); });
     }
