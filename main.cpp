@@ -171,8 +171,8 @@ public:
              
           if(m.value.IsDouble() ) {
             printf("\nValue of member %f ", m.value.GetDouble() );
-            builder.type(ValueType::Int)
-                   .value(m.value.GetInt());
+            builder.type(ValueType::Number)
+                   .value(m.value.GetDouble());
           }
               
           printf("\n");
