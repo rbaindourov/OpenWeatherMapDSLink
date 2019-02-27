@@ -123,6 +123,9 @@ public:
     }
   }
 
+
+  
+
   void getWeatherData() {
     if (!disconnected_) { //defensive programming, do nothing if not connected to EFM
       
@@ -144,21 +147,41 @@ public:
 
       responder_.set_value(OWDPath, Variant{buffer}, std::chrono::system_clock::now(), [](const std::error_code&) {});
       Document d;
-      d.Parse(buffer);
+      d.Parse(buffer.c_str());
+      NodeBuilder builder{"/"};
       for (auto& m : d["main"].GetObject()){
+               
+          builder.make_node(m.name.GetString())
+            .display_name(m.name.GetString());
+            
+                 
           printf("\n--------\nName of member %s ", m.name.GetString());
           
-          if(m.value.IsString() ) 
-              printf("\nValue of member %s ", m.value.GetString() );
-          if(m.value.IsInt() ) 
+          if(m.value.IsString() ) {
+            printf("\nValue of member %s ", m.value.GetString() );
+            builder.type(ValueType::String)
+                   .value(string(m.value.GetString()));
+          }
+              
+          if(m.value.IsInt() ) {
               printf("\nValue of member %i ", m.value.GetInt() );
-
-          if(m.value.IsDouble() ) 
-              printf("\nValue of member %f ", m.value.GetDouble() );
-          
+              builder.type(ValueType::Int)
+                   .value(m.value.GetInt());
+          }
+             
+          if(m.value.IsDouble() ) {
+            printf("\nValue of member %f ", m.value.GetDouble() );
+            builder.type(ValueType::Int)
+                   .value(m.value.GetInt());
+          }
+              
           printf("\n");
 
       }
+
+      responder_.add_node( move(builder),
+        bind(&OpenWeatherDataLink::nodes_created, this, placeholders::_1, placeholders::_2)
+      );
 
       link_.schedule_timed_task(std::chrono::seconds(60), [&]() { this->getWeatherData(); });
     }
