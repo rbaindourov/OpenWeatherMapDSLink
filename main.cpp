@@ -149,6 +149,7 @@ public:
       Document d;
       d.Parse(buffer.c_str());
       NodeBuilder builder{"/"};
+      if( d["main"].IsObject() )
       for (auto& m : d["main"].GetObject()){
                
           builder.make_node(m.name.GetString())
