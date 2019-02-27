@@ -149,8 +149,9 @@ public:
       Document d;
       d.Parse(buffer.c_str());
       NodeBuilder builder{"/"};
-      if( d["main"].IsObject() )
-      for (auto& m : d["main"].GetObject()){
+      if( d["main"].IsObject() ){
+
+        for (auto& m : d["main"].GetObject()){
                
           builder.make_node(m.name.GetString())
             .display_name(m.name.GetString());
@@ -179,10 +180,14 @@ public:
           printf("\n");
 
       }
-
       responder_.add_node( move(builder),
         bind(&OpenWeatherDataLink::nodes_created, this, placeholders::_1, placeholders::_2)
       );
+
+      }
+     
+
+
 
       link_.schedule_timed_task(std::chrono::seconds(60), [&]() { this->getWeatherData(); });
     }
