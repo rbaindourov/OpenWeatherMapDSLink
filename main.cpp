@@ -13,6 +13,37 @@ using namespace rapidjson;
 using namespace cisco::efm_sdk;
 using namespace std;
 
+/*
+
+{"coord":{"lon":-0.13,"lat":51.51},"weather":[{"id":800,"main":"Clear","description":"clear sky","icon":"01n"}],"base":"stations","main":{"temp":285.35,"pressure":1021,"humidity":58,"temp_min":282.59,"temp_max":288.15},"visibility":10000,"wind":{"speed":2.1,"deg":270},"clouds":{"all":0},"dt":1551291685,"sys":{"type":1,"id":1502,"message":0.0079,"country":"GB","sunrise":1551250147,"sunset":1551289080},"id":2643743,"name":"London","cod":200}
+
+
+--------
+Name of member temp 
+Value of member 285.350000 
+
+--------
+Name of member pressure 
+Value of member 1021 
+
+--------
+Name of member humidity 
+Value of member 58 
+
+--------
+Name of member temp_min 
+Value of member 282.590000 
+
+--------
+Name of member temp_max 
+Value of member 288.150000 
+[2019-02-27 10:45:07.824364] INFO SDK(1004): Unsubscribed from /text
+[2019-02-27 10:45:10.187111] INFO SDK(1003): Subscribed to /text
+[2019-02-27 10:45:15.106446] INFO SDK(1004): Unsubscribed from /text
+{"coord":{"lon":-0.13,"lat":51.51},"weather":[{"id":800,"main":"Clear","description":"clear sky","icon":"01n"}],"base":"stations","main":{"temp":285.35,"pressure":1021,"humidity":58,"temp_min":282.59,"temp_max":288.15},"visibility":10000,"wind":{"speed":2.1,"deg":270},"clouds":{"all":0},"dt":1551291685,"sys":{"type":1,"id":1502,"message":0.0079,"country":"GB","sunrise":1551250147,"sunset":1551289080},"id":2643743,"name":"London","cod":200}{"coord":{"lon":-0.13,"lat":51.51},"weather":[{"id":800,"main":"Clear","description":"clear sky","icon":"01n"}],"base":"stations","main":{"temp":285.35,"pressure":1021,"humidity":58,"temp_min":282.59,"temp_max":288.15},"visibility":10000,"wind":{"speed":2.1,"deg":270},"clouds":{"all":0},"dt":1551291685,"sys":{"type":1,"id":1502,"message":0.0079,"country":"GB","sunrise":1551250147,"sunset":1551289080},"id":2643743,"name":"London","cod":200}
+
+
+*/
 
 static char errorBuffer[CURL_ERROR_SIZE];
 static string buffer;
@@ -149,6 +180,7 @@ public:
       Document d;
       cout<< buffer << "\n\n";
       d.Parse(buffer.c_str());
+      buffer.clear();
       
       if( d["main"].IsObject() ){
         NodeBuilder builder{"/"};
