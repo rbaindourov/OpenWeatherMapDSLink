@@ -148,9 +148,9 @@ public:
       responder_.set_value(OWDPath, Variant{buffer}, std::chrono::system_clock::now(), [](const std::error_code&) {});
       Document d;
       d.Parse(buffer.c_str());
-      NodeBuilder builder{"/"};
+      
       if( d["main"].IsObject() ){
-
+        NodeBuilder builder{"/"};
         for (auto& m : d["main"].GetObject()){
                
           builder.make_node(m.name.GetString())
@@ -179,10 +179,10 @@ public:
               
           printf("\n");
 
-      }
-      responder_.add_node( move(builder),
-        bind(&OpenWeatherDataLink::nodes_created, this, placeholders::_1, placeholders::_2)
-      );
+        }
+        responder_.add_node( move(builder),
+          bind(&OpenWeatherDataLink::nodes_created, this, placeholders::_1, placeholders::_2)
+        );
 
       }
      
